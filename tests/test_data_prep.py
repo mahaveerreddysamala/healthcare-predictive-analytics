@@ -16,8 +16,14 @@ def test_clean_data_requires_target():
 
 
 def test_split_data_preserves_target():
-    df = pd.DataFrame({"readmitted": [0, 1, 0, 1, 0, 1], "age": [40, 50, 60, 70, 45, 55]})
-    X_train, X_test, y_train, y_test = split_data(df, test_size=0.33)
+    # Use enough observations in each class for a stable stratified split.
+    df = pd.DataFrame({
+        "readmitted": [0, 1] * 10,
+        "age": list(range(40, 60)),
+    })
+    X_train, X_test, y_train, y_test = split_data(df, test_size=0.2)
     assert "readmitted" not in X_train.columns
     assert len(X_train) + len(X_test) == len(df)
     assert len(y_train) + len(y_test) == len(df)
+    assert y_train.value_counts().to_dict() == {0: 8, 1: 8}
+    assert y_test.value_counts().to_dict() == {0: 2, 1: 2}
